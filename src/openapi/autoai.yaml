@@ -11,7 +11,7 @@ paths:
   /:
     get:
       operationId: healthCheck
-      summary: Health check
+      summary: Health check endpoint
       responses:
         "200":
           description: OK
@@ -24,10 +24,11 @@ paths:
                     type: boolean
                   service:
                     type: string
+
   /vin/scan:
     post:
       operationId: vinScan
-      summary: Basic EU VIN decoder
+      summary: EU VIN decoder (basic)
       requestBody:
         required: true
         content:
@@ -52,10 +53,11 @@ paths:
                     type: string
                   decoded:
                     type: object
+
   /dtc/lookup:
     post:
       operationId: dtcLookup
-      summary: EU diagnostic trouble code lookup
+      summary: EU DTC lookup
       requestBody:
         required: true
         content:
@@ -68,9 +70,145 @@ paths:
                   example: "P2015"
       responses:
         "200":
-          description: EU DTC lookup result
+          description: DTC lookup result
           content:
             application/json:
               schema:
                 type: object
 
+  /symptom/search:
+    post:
+      operationId: symptomSearch
+      summary: Search symptoms from EU database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  example: "rough idle"
+      responses:
+        "200":
+          description: Symptom search result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /diagnostic/search:
+    post:
+      operationId: diagnosticSearch
+    summary: Multi-source EU diagnostic search
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              vin:
+                type: string
+                example: "VF1KZ1J0641234567"
+              model:
+                type: string
+                example: "Golf Mk7"
+              engine_code:
+                type: string
+                example: "CAXA"
+              dtc_code:
+                type: string
+                example: "P2015"
+              symptom_text:
+                type: string
+                example: "rough idle"
+    responses:
+      "200":
+        description: Combined diagnostic result
+        content:
+          application/json:
+            schema:
+              type: object
+
+  /search_parts:
+    post:
+      operationId: partsSearch
+      summary: EU aftermarket parts lookup (Bosch, Valeo, Hella)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vin:
+                  type: string
+                query:
+                  type: string
+                  example: "oxygen sensor"
+      responses:
+        "200":
+          description: Parts search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name: { type: string }
+                        brand: { type: string }
+                        price: { type: number }
+                        stock: { type: string }
+
+  /documents/presign:
+    post:
+      operationId: presignUpload
+      summary: Get EU document upload presigned URL (pdf, images)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+      responses:
+        "200":
+          description: Presigned URL result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string }
+                  key: { type: string }
+
+  /documents:
+    post:
+      operationId: createDocument
+      summary: Store metadata for uploaded OEM document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                source_type: { type: string }
+                system: { type: string }
+                blob_key: { type: string }
+      responses:
+        "200":
+          description: Document stored
+          content:
+            application/json:
+              schema:
+                type: object
