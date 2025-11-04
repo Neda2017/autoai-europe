@@ -38,7 +38,6 @@ paths:
               properties:
                 vin:
                   type: string
-                  example: "WVWZZZ1KZ6W123456"
       responses:
         "200":
           description: VIN decode result
@@ -67,7 +66,6 @@ paths:
               properties:
                 code:
                   type: string
-                  example: "P2015"
       responses:
         "200":
           description: DTC lookup result
@@ -75,6 +73,9 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  result:
+                    type: object
 
   /symptom/search:
     post:
@@ -89,7 +90,6 @@ paths:
               properties:
                 text:
                   type: string
-                  example: "rough idle"
       responses:
         "200":
           description: Symptom search result
@@ -97,6 +97,11 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
 
   /diagnostic/search:
     post:
@@ -109,21 +114,11 @@ paths:
             schema:
               type: object
               properties:
-                vin:
-                  type: string
-                  example: "VF1KZ1J0641234567"
-                model:
-                  type: string
-                  example: "Golf Mk7"
-                engine_code:
-                  type: string
-                  example: "CAXA"
-                dtc_code:
-                  type: string
-                  example: "P2015"
-                symptom_text:
-                  type: string
-                  example: "rough idle"
+                vin: { type: string }
+                model: { type: string }
+                engine_code: { type: string }
+                dtc_code: { type: string }
+                symptom_text: { type: string }
       responses:
         "200":
           description: Combined diagnostic result
@@ -131,6 +126,9 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  data:
+                    type: object
 
   /search_parts:
     post:
@@ -143,11 +141,8 @@ paths:
             schema:
               type: object
               properties:
-                vin:
-                  type: string
-                query:
-                  type: string
-                  example: "oxygen sensor"
+                vin: { type: string }
+                query: { type: string }
       responses:
         "200":
           description: Parts search results
@@ -160,16 +155,11 @@ paths:
                     type: array
                     items:
                       type: object
-                      properties:
-                        name: { type: string }
-                        brand: { type: string }
-                        price: { type: number }
-                        stock: { type: string }
 
   /documents/presign:
     post:
       operationId: presignUpload
-      summary: Get presigned URL for uploading EU OEM documents
+      summary: Generate presigned URL for OEM document upload
       requestBody:
         required: true
         content:
@@ -177,11 +167,10 @@ paths:
             schema:
               type: object
               properties:
-                filename:
-                  type: string
+                filename: { type: string }
       responses:
         "200":
-          description: Presigned URL result
+          description: Presign result
           content:
             application/json:
               schema:
@@ -212,3 +201,6 @@ paths:
             application/json:
               schema:
                 type: object
+                properties:
+                  id: { type: string }
+                  status: { type: string }
