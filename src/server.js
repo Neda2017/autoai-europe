@@ -1,4 +1,5 @@
 // test change
+import { sb } from './supabase.js'
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -107,6 +108,114 @@ app.post("/dtc/lookup", (req, res) => {
 });
 
 const PORT = process.env.PORT || 8000;
+// EU DTC Lookup
+app.post('/dtc/lookup', async (req, res) => {
+  try {
+    const { code, brand } = req.body || {}
+    if (!code) return res.status(400).json({ ok: false, error: 'DTC_CODE_REQUIRED' })
+
+    let q = sb
+      .from('dtc_codes')
+      .select(`
+        code, system, cause, fix, severity, tech_notes,
+        brands:brand_id(name)
+      `)
+      .eq('code', code.toUpperCase())
+
+    if (brand) q = q.eq('brands.name', brand)
+
+    const { data, error } = await q
+    if (error) throw error
+
+    return res.json({ ok: true, items: data || [] })
+  } catch (e) {
+    console.error('[dtc/lookup]', e)
+    res.status(500).json({ ok: false, error: 'dtc_lookup_failed', detail: String(e) })
+  }
+})
+
+// Symptom Search
+app.post('/symptom/search', async (req, res) => {
+  try {
+    const { symptom, brand, engine_code } = req.body || {}
+    if (!symptom) return res.status(400).json({ ok: false, error: 'SYMPTOM_REQUIRED' })
+
+    let q = sb
+      .from('symptoms')
+      .select(`
+        id, symptom, probable_causes, diagnostics, fixes, confidence,
+        brands:brand_id(name)
+      `)
+      .ilike('symptom', `%${symptom}%`)
+
+    if (brand) q = q.eq('brands.name', brand)
+    if (engine_code) q = q.eq('engine_code', engine_code)
+
+    const { data, error } = await q
+    if (error) throw error
+
+    const items = (data || []).map(row => ({
+      ...row,
+      probable_causes: row.probable_causes?.split('|') ?? [],
+      diagnostics: row.diagnostics?.split('|') ?? [],
+      fixes: row.fixes?.split('|') ?? [],
+    }))
+
+    return res.json({ ok: true, items })
+  } catch (e) {
+    console.error('[symptom/search]', e)
+    res.status(500).json({ ok: false, error: 'symptom_search_failed', detail: String(e) })
+  }
+})
+
+// Diagnostic Fusion
+app.post('/diagnostic/search', async (req, res) => {
+  try {
+    const { vin, brand, engine_code, dtc_code, symptom_text } = req.body || {}
+
+    let dtcQ = sb
+      .from('dtc_codes')
+      .select('code, system, cause, fix, severity, tech_notes, brands:brand_id(name)')
+
+    if (dtc_code) dtcQ = dtcQ.eq('code', dtc_code.toUpperCase())
+    if (brand) dtcQ = dtcQ.eq('brands.name', brand)
+
+    const { data: dtcs } = await dtcQ
+
+    let symQ = sb
+      .from('symptoms')
+      .select('symptom, probable_causes, diagnostics, fixes, confidence, engine_code, brands:brand_id(name)')
+
+    if (symptom_text) symQ = symQ.ilike('symptom', `%${symptom_text}%`)
+    if (brand) symQ = symQ.eq('brands.name', brand)
+    if (engine_code) symQ = symQ.eq('engine_code', engine_code)
+
+    const { data: rawSyms } = await symQ
+
+    const symptoms = (rawSyms || []).map(row => ({
+      ...row,
+      probable_causes: row.probable_causes?.split('|') ?? [],
+      diagnostics: row.diagnostics?.split('|') ?? [],
+      fixes: row.fixes?.split('|') ?? [],
+    }))
+
+    res.json({
+      ok: true,
+      dtcs: dtcs || [],
+      symptoms,
+      next_steps: [
+        'Check live data (fuel trims, MAF/MAP, O2)',
+        'Smoke test intake system',
+        'Check technical service bulletins',
+        'Perform brand-specific actuator tests'
+      ]
+    })
+  } catch (e) {
+    console.error('[diagnostic/search]', e)
+    res.status(500).json({ ok: false, error: 'diagnostic_search_failed', detail: String(e) })
+  }
+})
+
 app.listen(process.env.PORT, () => {
   console.log("AutoAI Europe backend running");
 });
