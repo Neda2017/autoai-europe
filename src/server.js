@@ -11,9 +11,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/openapi/autoai.yaml', (req, res) => {
-  res.sendFile(path.join(__dirname, 'openapi', 'autoai.yaml'));
-});
+app.get("/openapi/autoai-openapi.yaml", (req, res) => {
+  res.setHeader("Content-Type", "application/yaml; charset=utf-8")
+  res.sendFile(path.join(__dirname, "openapi", "autoai-openapi.yaml"))
+})
+
+app.get("/openapi/autoai.yaml", (req, res) => {
+  res.setHeader("Content-Type", "application/yaml; charset=utf-8")
+  res.sendFile(path.join(__dirname, "openapi", "autoai-openapi.yaml"))
+})
+
 
 app.get('/', (req, res) => {
   res.json({ ok: true, service: "autoai-europe-backend" });
