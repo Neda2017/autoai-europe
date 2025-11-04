@@ -105,7 +105,7 @@ app.post("/dtc/lookup", (req, res) => {
   });
 });
 
-
-app.listen(process.env.PORT || 3000, () => {
+const PORT = process.env.PORT || 8000;
+app.listen(process.env.PORT, () => {
   console.log("AutoAI Europe backend running");
 });
