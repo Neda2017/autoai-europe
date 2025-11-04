@@ -24,4 +24,32 @@ paths:
                     type: boolean
                   service:
                     type: string
+  /vin/scan:
+    post:
+      operationId: vinScan
+      summary: Basic EU VIN decoder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vin:
+                  type: string
+                  example: "WVWZZZ1KZ6W123456"
+      responses:
+        "200":
+          description: VIN decode result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  vin:
+                    type: string
+                  decoded:
+                    type: object
 
