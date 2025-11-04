@@ -101,41 +101,41 @@ paths:
   /diagnostic/search:
     post:
       operationId: diagnosticSearch
-    summary: Multi-source EU diagnostic search
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              vin:
-                type: string
-                example: "VF1KZ1J0641234567"
-              model:
-                type: string
-                example: "Golf Mk7"
-              engine_code:
-                type: string
-                example: "CAXA"
-              dtc_code:
-                type: string
-                example: "P2015"
-              symptom_text:
-                type: string
-                example: "rough idle"
-    responses:
-      "200":
-        description: Combined diagnostic result
+      summary: Multi-source EU diagnostic search
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              properties:
+                vin:
+                  type: string
+                  example: "VF1KZ1J0641234567"
+                model:
+                  type: string
+                  example: "Golf Mk7"
+                engine_code:
+                  type: string
+                  example: "CAXA"
+                dtc_code:
+                  type: string
+                  example: "P2015"
+                symptom_text:
+                  type: string
+                  example: "rough idle"
+      responses:
+        "200":
+          description: Combined diagnostic result
+          content:
+            application/json:
+              schema:
+                type: object
 
   /search_parts:
     post:
       operationId: partsSearch
-      summary: EU aftermarket parts lookup (Bosch, Valeo, Hella)
+      summary: EU aftermarket parts search (Bosch, Valeo, Hella)
       requestBody:
         required: true
         content:
@@ -169,7 +169,7 @@ paths:
   /documents/presign:
     post:
       operationId: presignUpload
-      summary: Get EU document upload presigned URL (pdf, images)
+      summary: Get presigned URL for uploading EU OEM documents
       requestBody:
         required: true
         content:
@@ -193,7 +193,7 @@ paths:
   /documents:
     post:
       operationId: createDocument
-      summary: Store metadata for uploaded OEM document
+      summary: Store metadata for an uploaded OEM document
       requestBody:
         required: true
         content:
