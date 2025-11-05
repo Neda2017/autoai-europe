@@ -1,43 +1,106 @@
-// ✅ routes.js — exports a real Express router AND functions
-
-import express from "express";
 import { sb } from "./supabase.js";
 
-const router = express.Router();
+// ✅ VIN SCAN
+export async function vinScan({ vin }) {
+  if (!vin) return { ok: false, error: "vin_required" };
 
-/* ---------------- VIN SCAN ---------------- */
-export async function vinScan(req, res) {
-  const { vin } = req.body;
-  if (!vin) return res.status(400).json({ error: "vin_required" });
-
-  return res.json({
+  return {
     ok: true,
     vin,
     decoded: {
-      market: "EU",
-      year: "Unknown",
-      manufacturer: "Unknown",
-    },
-  });
+      region: "EU",
+      manufacturer: "Volkswagen Group",
+      model_guess: "Golf / Passat (approx)",
+    }
+  };
 }
 
-router.post("/vin/scan", vinScan);
+// ✅ DTC LOOKUP (EU)
+export async function dtcLookup({ code }) {
+  if (!code) return { error: "code_required" };
 
-/* ---------------- DTC LOOKUP ---------------- */
-export async function dtcLookup(req, res) {
-  const { code } = req.body;
-  if (!code) return res.status(400).json({ error: "code_required" });
+  const { data, error } = await sb
+    .from("dtc_codes")
+    .select("*")
+    .ilike("code", code);
 
-  const { data } = await sb.from("dtc_codes").select("*").eq("code", code).maybeSingle();
+  return { code, data, error };
+}
 
-  return res.json({
+// ✅ SYMPTOM SEARCH (EU)
+export async function symptomSearch({ text }) {
+  if (!text) return { error: "text_required" };
+
+  const { data, error } = await sb
+    .from("symptoms")
+    .select("*")
+    .ilike("symptom", `%${text}%`);
+
+  return { text, data, error };
+}
+
+// ✅ DIAGNOSTIC SEARCH (EU combined)
+export async function diagnosticSearch({ vin, dtc_code, symptom_text }) {
+  const out = {};
+
+  if (vin) {
+    out.vin = {
+      decoded: {
+        region: "EU",
+        manufacturer_guess: "VW/Audi/Skoda/Seat (EU VIN)"
+      }
+    };
+  }
+
+  if (dtc_code) {
+    const { data } = await sb
+      .from("dtc_codes")
+      .select("*")
+      .ilike("code", dtc_code);
+    out.dtc = data;
+  }
+
+  if (symptom_text) {
+    const { data } = await sb
+      .from("symptoms")
+      .select("*")
+      .ilike("symptom", `%${symptom_text}%`);
+    out.symptoms = data;
+  }
+
+  return out;
+}
+
+// ✅ PARTS SEARCH (stub for now)
+export async function partsSearch({ vin, query }) {
+  return {
+    vin,
+    query,
+    items: [
+      {
+        name: "Air filter",
+        supplier: "EU Supplier",
+        price: 29.99
+      }
+    ]
+  };
+}
+
+// ✅ DOCUMENT UPLOAD (stub)
+export async function presignUpload({ filename }) {
+  return {
     ok: true,
-    code,
-    result: data || null,
-  });
+    filename,
+    url: "https://example.com/upload-url"
+  };
 }
 
-router.post("/dtc/lookup", dtcLookup);
-
-/* ✅ MUST EXPORT DEFAULT ROUTER */
-export default router;
+// ✅ DOCUMENT CREATE (stub)
+export async function createDocument({ title, blob_key }) {
+  return {
+    ok: true,
+    title,
+    blob_key,
+    stored: true
+  };
+}
