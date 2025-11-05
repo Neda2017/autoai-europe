@@ -28,8 +28,11 @@ app.get("/", (req, res) => {
 
 // ✅ Serve OpenAPI YAML for GPT Actions
 app.get("/openapi/autoai-openapi.yaml", (req, res) => {
-  res.sendFile(path.join(__dirname, "openapi", "autoai-openapi.yaml"));
+  const yamlPath = path.join(__dirname, "openapi/autoai-openapi.yaml");
+  res.setHeader("Content-Type", "application/yaml");
+  res.sendFile(yamlPath);
 });
+
 
 // ✅ Attach router for all API endpoints
 app.use("/", router);
