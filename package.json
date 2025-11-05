@@ -1,9 +1,18 @@
-"dependencies": {
-  "@aws-sdk/client-s3": "^3.0.0",
-  "@aws-sdk/s3-request-presigner": "^3.0.0",
-  "@supabase/supabase-js": "^2.0.0",
-  "cors": "^2.8.5",
-  "dotenv": "^16.0.0",
-  "express": "^4.18.0",
-  "openai": "^4.0.0"
+{
+  "name": "autoai-europe",
+  "version": "2.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/s3-request-presigner": "^3.0.0",
+    "@supabase/supabase-js": "^2.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "openai": "^4.0.0"
+  }
 }
