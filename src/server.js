@@ -1,36 +1,27 @@
 import express from "express";
 import cors from "cors";
-import path from "path";
-import fs from "fs";
 import { fileURLToPath } from "url";
-
-import routes from "./routes.js";
+import path from "path";
+import router from "./routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json({ limit: "10mb" }));
 
-// ✅ Serve OpenAPI YAML correctly
+// YAML endpoint
 app.get("/openapi/autoai-openapi.yaml", (req, res) => {
-  const filePath = path.join(__dirname, "openapi", "autoai-openapi.yaml");
-  console.log("Serving YAML from:", filePath);
-
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send("YAML file not found");
-  }
-
-  res.setHeader("Content-Type", "text/yaml");
-  res.sendFile(filePath);
+  res.sendFile(path.join(__dirname, "openapi", "autoai-openapi.yaml"));
 });
 
-// Register routes
+// ✅ Main router
 app.use("/", router);
 
 const PORT = process.env.PORT || 10000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`AutoAI Europe backend running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log("AutoAI Europe backend running");
 });
+
