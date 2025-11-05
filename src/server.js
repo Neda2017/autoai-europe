@@ -27,7 +27,7 @@ app.get("/openapi/autoai-openapi.yaml", (req, res) => {
 });
 
 // Register routes
-app.use("/", routes);
+app.use("/", router);
 
 const PORT = process.env.PORT || 10000;
 
