@@ -1,82 +1,37 @@
-import express from "express"; // or const express = require("express");
-const app = express();
-app.use(express.static("public"));
-
 import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import {
-  vinScan,
-  dtcLookup,
-  symptomSearch,
-  diagnosticSearch,
-  partsSearch,
-  presignUpload,
-  createDocument
-} from "./routes.js";
+const app = express();
+const port = process.env.PORT || 10000;
 
-// Fix __dirname for ES modules
+// ✅ Needed to resolve __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+// --- Middleware ---
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.static("public"));
+app.use(express.json());
 
-// ✅ HEALTH CHECK
-app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    service: "autoai-europe-backend"
-  });
+// ✅ Serve all static files from /public folder
+// This makes /autoai-chat.html and /static/... accessible by URL
+app.use(express.static(path.join(__dirname, "public")));
+
+// --- Example route (keep your existing API routes here) ---
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true, message: "AutoAI Europe API online" });
 });
 
-// ✅ SERVE OPENAPI FILE FOR GPT ACTIONS
-app.get("/openapi/autoai-openapi.yaml", (req, res) => {
-  const filePath = path.join(__dirname, "openapi", "autoai-openapi.yaml");
-  res.setHeader("Content-Type", "text/yaml");
-  res.sendFile(filePath);
+// --- Catch-all route for safety ---
+app.get("*", (req, res, next) => {
+  // If the route doesn’t exist and isn’t a static file,
+  // just send a 404 instead of crashing the server
+  if (req.path.includes(".")) return next();
+  res.status(404).send("Route not found");
 });
 
-// ✅ VIN SCAN
-app.post("/vin/scan", async (req, res) => {
-  res.json(await vinScan(req.body));
-});
-
-// ✅ DTC LOOKUP (EU database)
-app.post("/dtc/lookup", async (req, res) => {
-  res.json(await dtcLookup(req.body));
-});
-
-// ✅ SYMPTOM SEARCH (EU workshop logic)
-app.post("/symptom/search", async (req, res) => {
-  res.json(await symptomSearch(req.body));
-});
-
-// ✅ ADVANCED DIAGNOSTIC SEARCH
-app.post("/diagnostic/search", async (req, res) => {
-  res.json(await diagnosticSearch(req.body));
-});
-
-// ✅ PARTS LOOKUP (EU suppliers later)
-app.post("/search_parts", async (req, res) => {
-  res.json(await partsSearch(req.body));
-});
-
-// ✅ DOCUMENT PRESIGN (S3 / future use)
-app.post("/documents/presign", async (req, res) => {
-  res.json(await presignUpload(req.body));
-});
-
-// ✅ DOCUMENT STORE METADATA
-app.post("/documents", async (req, res) => {
-  res.json(await createDocument(req.body));
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`✅ AutoAI Europe backend running on port ${PORT}`);
+// --- Start the server ---
+app.listen(port, () => {
+  console.log(`✅ AutoAI Europe server running on port ${port}`);
 });
