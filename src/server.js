@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import evRoutes from "../routes/ev.js";   // ✅ FIXED: correct relative path from /src/server.js
 
 const app = express();
 const port = process.env.PORT || 10000;
@@ -16,17 +17,19 @@ app.use(express.json());
 
 // ✅ Serve all static files from /public folder
 // This makes /autoai-chat.html and /static/... accessible by URL
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "../public")));  // ✅ adjusted path to public
+
+// --- Integrate EVHub routes ---
+app.use("/api", evRoutes);
+console.log("✅ EVHub routes loaded successfully");
 
 // --- Example route (keep your existing API routes here) ---
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "AutoAI Europe API online" });
 });
-       app.use("/api", evRoutes);
+
 // --- Catch-all route for safety ---
 app.get("*", (req, res, next) => {
-  // If the route doesn’t exist and isn’t a static file,
-  // just send a 404 instead of crashing the server
   if (req.path.includes(".")) return next();
   res.status(404).send("Route not found");
 });
