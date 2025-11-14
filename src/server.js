@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "AutoAI Europe API online" });
 });
-
+       app.use("/api", evRoutes);
 // --- Catch-all route for safety ---
 app.get("*", (req, res, next) => {
   // If the route doesn’t exist and isn’t a static file,
