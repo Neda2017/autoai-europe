@@ -20,6 +20,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
+app.use(express.static("public"));
 
 // ✅ HEALTH CHECK
 app.get("/", (req, res) => {
