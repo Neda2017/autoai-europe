@@ -1,3 +1,7 @@
+import express from "express"; // or const express = require("express");
+const app = express();
+app.use(express.static("public"));
+
 import express from "express";
 import cors from "cors";
 import path from "path";
